@@ -2,6 +2,8 @@ require 'spec_helper'
 
 describe "Static pages" do
 
+  # it内のshouldのレシーバとして設定
+  # page.should ---> should
   subject { page }
 
   shared_examples_for "all static pages" do
@@ -10,6 +12,7 @@ describe "Static pages" do
   end
 
   describe "Home page" do
+    # 事前処理
     before { visit root_path }
     let(:heading)    { 'Sample App' }
     let(:page_title) { '' }
