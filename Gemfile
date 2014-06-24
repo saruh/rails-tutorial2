@@ -35,4 +35,5 @@ end
 group :test do
   gem 'minitest'
   gem 'shoulda-matchers'
+  gem 'factory_girl_rails', '4.2.1'
 end
