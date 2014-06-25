@@ -18,6 +18,8 @@ describe User do
   it { should respond_to(:password_digest) }
   it { should respond_to(:password) }
   it { should respond_to(:password_confirmation) }
+  it { should respond_to(:remember_token) }
+  it { should respond_to(:authenticate) }
 
   # 妥当性チェック @user.valid? と同じ
   it { should be_valid }
@@ -118,4 +120,11 @@ describe User do
       specify { expect(user_for_invalid_password).to be_false }
     end
   end
+
+  # session用のtokenテスト
+  describe "remember token" do
+    before { @user.save }
+    its(:remember_token) { should_not be_blank }   # its -> it(@user) の属性(:remenber_token)をさす
+  end
+
 end
