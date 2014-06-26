@@ -20,9 +20,11 @@ describe User do
   it { should respond_to(:password_confirmation) }
   it { should respond_to(:remember_token) }
   it { should respond_to(:authenticate) }
+  it { should respond_to(:admin) }
 
-  # 妥当性チェック @user.valid? と同じ
-  it { should be_valid }
+  # 妥当性チェック
+  it { should be_valid }       # @user.valid? と同じ
+  it { should_not be_admin }   # !@user.admin? と同じ
 
   # blankを設定後、妥当性チェックが失敗することを確認
   describe "when name is not present" do
