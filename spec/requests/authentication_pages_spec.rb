@@ -9,6 +9,12 @@ describe "Authentication" do
 
     it { should have_content('Sign in') }
     it { should have_title('Sign in') }
+
+    it { should_not have_link('Users')}
+    it { should_not have_link('Profile') }
+    it { should_not have_link('Settings') }
+    it { should_not have_link('Sign out') }
+    it { should have_link('Sign in') }
   end
 
   describe "signin" do
@@ -20,6 +26,12 @@ describe "Authentication" do
       it { should have_title('Sign in') }
       #it { should have_selector('div.alert.alert-error', text: 'Invalid') }
       it { should have_error_message('Invalid') }
+
+      it { should_not have_link('Users')}
+      it { should_not have_link('Profile') }
+      it { should_not have_link('Settings') }
+      it { should_not have_link('Sign out') }
+      it { should have_link('Sign in') }
 
       describe "after visiting another page" do
         before { click_link "Home" }
@@ -42,42 +54,60 @@ describe "Authentication" do
 
       describe "followed by signout" do
         before { click_link "Sign out" }
+        it { should_not have_link('Users')}
+        it { should_not have_link('Profile') }
+        it { should_not have_link('Settings') }
+        it { should_not have_link('Sign out') }
         it { should have_link('Sign in') }
       end
     end
   end
 
   describe "authorization" do
-
+    #
     describe "for non-signed-in users" do
+      # ユーザ登録
       let(:user) { FactoryGirl.create(:user) }
-
+      # サインイン制限のかかったページへ移動
       describe "when attempting to visit a protected page" do
+        # 目的ページを訪れて、飛ばされたページでログイン
         before do
           visit edit_user_path(user)
-          fill_in "Email",    with: user.email
-          fill_in "Password", with: user.password
-          click_button "Sign in"
+          sign_in user, no_visit_signin: true
         end
-
+        # サインイン後の確認
         describe "after signing in" do
+          # 編集ページへ遷移することを確認（フレンドリーフォーワーディング）
           it "should render the desired protected page" do
             expect(page).to have_title('Edit user')
+          end
+          # 再度サインインし直した時の確認
+          describe "when signing in again" do
+            # サインアウト後にサインインページへ移動し、サインイン
+            before do
+              delete signout_path
+              sign_in user
+            end
+            # デフォルトのプロファイルページに遷移することを確認
+            it "should render the default (profile) page" do
+              expect(page).to have_title(user.name)
+            end
           end
         end
       end
 
       describe "in the Users controller" do
+        # 編集ページへの訪問
         describe "visiting the edit page" do
           before { visit edit_user_path(user) }
           it { should have_title('Sign in') }
         end
-
+        # アップデートの実行
         describe "submitting to the update action" do
           before { patch user_path(user) }
           specify { expect(response).to redirect_to(signin_path) }
         end
-
+        # 一覧ページへの訪問
         describe "visiting the user index" do
           before { visit users_path }
           it { should have_title('Sign in') }
@@ -117,6 +147,33 @@ describe "Authentication" do
         # ルートにリダイレクトされることを確認
         specify { expect(response).to redirect_to(root_path) }
       end
+    end
+  end
+
+  describe "as signed-in user" do
+    let(:user) { FactoryGirl.create(:user) }
+    before { sign_in user, no_capybara:true }
+
+    # difference of root_url and root_path
+    # --------------------------------------------
+    # $ bundle exec rails console
+    # > Loading development environment (Rails 4.1.1)
+    # > irb(main):001:0> app.root_url
+    # > => "http://www.example.com/"
+    # > irb(main):002:0> app.root_path
+    # > => "/"
+    # > irb(main):003:0> exit
+
+    describe "cannot access #new action" do
+      before { get new_user_path }
+      #specify { expect(response).to redirect_to(root_url) }
+      specify { response.should redirect_to(root_path) }
+    end
+
+    describe "cannot access #create action" do
+      before { post users_path(user) }
+      #specify { expect(response).to redirect_to(root_url) }
+      specify { response.should redirect_to(root_path) }
     end
   end
 end

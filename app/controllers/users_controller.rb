@@ -1,7 +1,8 @@
 class UsersController < ApplicationController
-  before_action :signed_in_user, only: [:index, :edit, :update, :destroy]
-  before_action :correct_user,   only: [:edit, :update]
-  before_action :admin_user,     only: :destroy
+  before_action :signed_in_user,        only: [:index, :edit, :update, :destroy]
+  before_action :correct_user,          only: [:edit, :update]
+  before_action :admin_user,            only: :destroy
+  before_action :restrict_registration, only: [:new, :create]
 
   def index
     @users = User.paginate(page: params[:page])
@@ -39,8 +40,13 @@ class UsersController < ApplicationController
   end
 
   def destroy
-    User.find(params[:id]).destroy
-    flash[:success] = "User destroyed."
+    user = User.find(params[:id])
+    if current_user?(user)
+      flash[:notice] = "Cannot destroy yourself."
+    else
+      User.find(params[:id]).destroy
+      flash[:success] = "User destroyed."
+    end
     redirect_to users_url
   end
 
@@ -69,5 +75,9 @@ class UsersController < ApplicationController
 
     def admin_user
       redirect_to(root_path) unless current_user.admin?
+    end
+
+    def restrict_registration
+       redirect_to root_url, notice: "You are already regsitered." if signed_in?
     end
   end
