@@ -21,6 +21,8 @@ describe User do
   it { should respond_to(:remember_token) }
   it { should respond_to(:authenticate) }
   it { should respond_to(:admin) }
+  it { should respond_to(:microposts) }
+  it { should respond_to(:feed) }
 
   # 妥当性チェック
   it { should be_valid }       # @user.valid? と同じ
@@ -129,4 +131,50 @@ describe User do
     its(:remember_token) { should_not be_blank }   # its -> it(@user) の属性(:remenber_token)をさす
   end
 
+  # マイクロポスト関連のテスト
+  describe "micropost associations" do
+    # @user保存
+    before { @user.save }
+    # let  は参照されたときに初期化
+    # let! は即座に作成
+    let!(:older_micropost) do
+      FactoryGirl.create(:micropost, user: @user, created_at: 1.day.ago)
+    end
+    let!(:newer_micropost) do
+      FactoryGirl.create(:micropost, user: @user, created_at: 1.hour.ago)
+    end
+
+    # Action Record の Collection Proxy から to_a で配列にして、比較
+    it "should have the right microposts in the right order" do
+      expect(@user.microposts.to_a).to eq [newer_micropost, older_micropost]
+    end
+
+    # マイクロポストの削除のテスト
+    it "should destroy associated microposts" do
+      # オブジェクトをコピー
+      microposts = @user.microposts.to_a
+      # ユーザを削除
+      @user.destroy
+      # to_a の設定忘れを回避
+      expect(microposts).not_to be_empty
+      # micropostが1件も無いことを確認
+      microposts.each do |micropost|
+        expect(Micropost.where(id: micropost.id)).to be_empty
+      end
+      # 1件も無いことをfindで確認する場合
+      #expect do
+      #  Micropost.find(micropost)
+      #end.to raise_error(ActiveRecord::RecordNotFound)
+    end
+
+    describe "status" do
+      let(:unfollowed_post) do
+        FactoryGirl.create(:micropost, user: FactoryGirl.create(:user))
+      end
+
+      its(:feed) { should include(newer_micropost) }
+      its(:feed) { should include(older_micropost) }
+      its(:feed) { should_not include(unfollowed_post) }
+    end
+  end
 end

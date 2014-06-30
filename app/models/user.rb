@@ -1,4 +1,7 @@
 class User < ActiveRecord::Base
+  # 複数所有するmicropostsを関連付け
+  #has_many :microposts
+  has_many :microposts, dependent: :destroy
   # バリデーション後、保存前の処理
   # -->事前に小文字に変換
   #before_save { self.email = email.downcase }
@@ -21,6 +24,13 @@ class User < ActiveRecord::Base
 
   def User.encrypt(token)
     Digest::SHA1.hexdigest(token.to_s)
+  end
+
+  def feed
+    # このコードは準備段階です。
+    # 完全な実装は第11章「ユーザーをフォローする」を参照してください。
+    # microposts
+    Micropost.where("user_id = ?", id)
   end
 
   private
