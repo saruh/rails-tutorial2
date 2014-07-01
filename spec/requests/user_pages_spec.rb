@@ -84,6 +84,27 @@ describe "User pages" do
       it { should have_content(m2.content) }
       it { should have_content(user.microposts.count) }
     end
+
+    # 自分のマイクロポストは削除リンクが表示されることを確認
+    describe "as a user" do
+      before do
+        sign_in user
+        visit user_path(user)
+      end
+
+      it { should have_link('delete') }
+    end
+
+    # 他人にはマイクロポストの削除リンクが表示されないことを確認
+    describe "as an other user" do
+      let(:other_user) { FactoryGirl.create(:user) }
+      before do
+        sign_in other_user
+        visit user_path(user)
+      end
+
+      it { should_not have_link('delete') }
+    end
   end
 
   describe "signup page" do

@@ -29,8 +29,8 @@ class User < ActiveRecord::Base
   def feed
     # このコードは準備段階です。
     # 完全な実装は第11章「ユーザーをフォローする」を参照してください。
-    # microposts
-    Micropost.where("user_id = ?", id)
+     microposts
+    #Micropost.where("user_id = ?", id)
   end
 
   private

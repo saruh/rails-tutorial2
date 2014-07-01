@@ -34,7 +34,26 @@ describe "Static pages" do
           expect(page).to have_selector("li##{item.id}", text: item.content)
         end
       end
+
+      describe "micropost counts" do
+        before { click_link "delete", match: :first }
+        it "should be singular when count eq to 1" do
+          expect(page).to have_selector("span", text: "1 micropost")
+        end
+      end
     end
+  end
+
+  describe "micropost pagination" do
+    let(:user) { FactoryGirl.create(:user) }
+    before do
+      31.times { FactoryGirl.create(:micropost, user: user) }
+      sign_in user
+      visit root_path
+    end
+    after { user.microposts.destroy_all }
+
+    it { should have_selector("div.pagination") }
   end
 
   describe "Help page" do
