@@ -63,5 +63,7 @@ end
 
 group :development do
   gem 'rails-footnotes', '>= 4.0.0', '<5'
+  gem 'better_errors'
+  gem 'binding_of_caller'
 end
 

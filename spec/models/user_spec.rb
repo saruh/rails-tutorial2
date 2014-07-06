@@ -23,6 +23,12 @@ describe User do
   it { should respond_to(:admin) }
   it { should respond_to(:microposts) }
   it { should respond_to(:feed) }
+  it { should respond_to(:relationships) }
+  it { should respond_to(:followed_users) }
+  it { should respond_to(:reverse_relationships) }
+  it { should respond_to(:followers) }
+  it { should respond_to(:following?) }
+  it { should respond_to(:follow!) }
 
   # 妥当性チェック
   it { should be_valid }       # @user.valid? と同じ
@@ -168,13 +174,53 @@ describe User do
     end
 
     describe "status" do
+      # フォローしていないユーザのマイクロポストを作成
       let(:unfollowed_post) do
         FactoryGirl.create(:micropost, user: FactoryGirl.create(:user))
       end
-
+      # ユーザ followed_user の作成
+      let(:followed_user) { FactoryGirl.create(:user) }
+      before do
+        # followed_userをフォロー
+        @user.follow!(followed_user)
+        # followed_userのマイクロポストを作成
+        3.times { followed_user.microposts.create!(content: "Lorem ipsum") }
+      end
+      # feedに自分の新しいマイクロポストがあることを確認
       its(:feed) { should include(newer_micropost) }
+      # feedに自分の古いマイクロポストがあることを確認
       its(:feed) { should include(older_micropost) }
+      # feedにフォローしていないユーザのマイクロポストがないことを確認
       its(:feed) { should_not include(unfollowed_post) }
+      # feedにフォローしているユーザのマイクロポストがあることを確認
+      its(:feed) do
+        followed_user.microposts.each do |micropost|
+          should include(micropost)
+        end
+      end
+    end
+  end
+
+  describe "following" do
+    let(:other_user) { FactoryGirl.create(:user) }
+    before do
+      @user.save
+      @user.follow!(other_user)
+    end
+    # other_user がフォローしていることを確認
+    it { should be_following(other_user) }                # 登録されているか確認
+    its(:followed_users) { should include(other_user) }   # followed_users に含まれていることを確認
+    # other_user からみて user をフォローしていることを確認
+    describe "followed user" do
+      subject { other_user }
+      its(:followers) { should include(@user) }
+    end
+    # フォロー解除
+    describe "and unfollowing" do
+      before { @user.unfollow!(other_user) }
+      # 解除されていることを確認
+      it { should_not be_following(other_user) }
+      its(:followed_users) { should_not include(other_user) }
     end
   end
 end
