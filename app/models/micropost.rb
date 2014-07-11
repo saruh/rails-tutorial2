@@ -6,7 +6,8 @@ class Micropost < ActiveRecord::Base
   validates :content, presence: true, length: { maximum: 140 }
 
   # 与えられたユーザーがフォローしているユーザー達のマイクロポストを返す。
-  def self.from_users_followed_by(user)
+  #def self.from_users_followed_by(user)
+  def self.from_users_followed_by(user, params = nil)
     # followed_user_ids は 「has_many :followed_users」 から自動生成されている
     # followed_user_ids = followed_users.map(&:id)
     #followed_user_ids = user.followed_user_ids
@@ -16,7 +17,12 @@ class Micropost < ActiveRecord::Base
     # プレースホルダで設定することにより followed_user_ids だけで followed_user_ids.join(',') を補ってくれている。
     # また、データベースに依存する一部の非互換性まで解消してくれるようです。
     #where("user_id IN (?) OR user_id = ?", followed_user_ids, user)
-    where("user_id IN (#{followed_user_ids}) OR user_id = :user_id", user_id: user)
+    #binding.pry
+    if (params)
+      where("(user_id IN (#{followed_user_ids}) OR user_id = :user_id) AND content Like :search_word", user_id: user, search_word: "%#{params[:search_word]}%")
+    else
+      where("user_id IN (#{followed_user_ids}) OR user_id = :user_id", user_id: user)
+    end
   end
 
   # CSV出力

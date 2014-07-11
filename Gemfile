@@ -61,9 +61,24 @@ end
 #  gem 'shoulda-matchers'
 #end
 
+# Debug Tool
+group :development, :test do
+  gem 'pry'
+  gem 'pry-doc'
+  gem 'pry-rails'
+  gem 'pry-byebug'
+  gem 'pry-stack_explorer'
+end
+
 group :development do
   gem 'rails-footnotes', '>= 4.0.0', '<5'
   gem 'better_errors'
   gem 'binding_of_caller'
+  gem 'hirb'
+  gem 'hirb-unicode'
+  gem 'quiet_assets'
+  gem 'rack-mini-profiler'
+  gem 'tapp'
+  gem 'view_source_map'
 end
 

@@ -1,12 +1,12 @@
-<a href="<%= user_path(current_user) %>">
-  <%= gravatar_for current_user, size: 52 %>
+<a href="<%= user_path(user_info) %>">
+  <%= gravatar_for user_info, size: 52 %>
 </a>
 <h1>
-  <%= current_user.name %>
+  <%= user_info.name %>
 </h1>
 <span>
-  <%= link_to "view my profile", current_user %>
+  <%= link_to "view my profile", user_info %>
 </span>
 <span>
-  <%= pluralize(current_user.microposts.count, "micropost") %>
+  <%= pluralize(user_info.microposts.count, "micropost") %>
 </span>

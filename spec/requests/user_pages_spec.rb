@@ -136,23 +136,33 @@ describe "User pages" do
           user.follow!(other_user)
           visit user_path(other_user)
         end
-
+        # フォローを解除するとフォローしているユーザ数が減少することを確認
         it "should decrement the followed user count" do
           expect do
             click_button "Unfollow"
           end.to change(user.followed_users, :count).by(-1)
         end
-
+        # フォローを解除するとフォローされているユーザ数が減少することを確認
         it "should decrement the other user's followers count" do
           expect do
             click_button "Unfollow"
           end.to change(other_user.followers, :count).by(-1)
         end
-
+        # フォローを解除するとボタンが Unfollow -> Follow に変わることを確認
         describe "toggling the button" do
           before { click_button "Unfollow" }
           it { should have_xpath("//input[@value='Follow']") }
         end
+      end
+
+      describe "follower/following counts" do
+        before do
+          other_user.follow!(user)
+          visit user_path(user)
+        end
+
+        it { should have_link("0 following", href: following_user_path(user)) }
+        it { should have_link("1 followers", href: followers_user_path(user)) }
       end
     end
   end

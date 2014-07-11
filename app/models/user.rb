@@ -24,20 +24,27 @@ class User < ActiveRecord::Base
   has_secure_password     # Rails 3.1からのパスワード機構
   validates :password, length: { minimum: 6 }
 
-  def User.new_remember_token
+  # Class Method :
+  #def User.new_remember_token
+  def self.new_remember_token
     SecureRandom.urlsafe_base64
   end
-
-  def User.encrypt(token)
+  # Class Method :
+  #def User.encrypt(token)
+  def self.encrypt(token)
     Digest::SHA1.hexdigest(token.to_s)
   end
 
-  def feed
-    # このコードは準備段階です。
-    # 完全な実装は第11章「ユーザーをフォローする」を参照してください。
-    #microposts
-    #Micropost.where("user_id = ?", id)
-    Micropost.from_users_followed_by(self)
+  #def feed
+  #  Micropost.from_users_followed_by(self)
+  #end
+  def feed(params = nil)
+    #binding.pry
+    if (params)
+      Micropost.from_users_followed_by(self, search_word: params[:search_word])
+    else
+      Micropost.from_users_followed_by(self)
+    end
   end
   # other_userがrelationshipsにfollowed_idとして登録されているか確認
   def following?(other_user)
@@ -50,6 +57,15 @@ class User < ActiveRecord::Base
   # oher_userをrelationshipsから解除
   def unfollow!(other_user)
     relationships.find_by(followed_id: other_user.id).destroy
+  end
+  # Class Method : 検索
+  #def User.search(search_word)
+  def self.search(search_word)
+    if search_word
+      User.where(['name Like ?', "%#{search_word}%"])
+    else
+      User.all
+    end
   end
 
   private

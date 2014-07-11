@@ -1,3 +1,10 @@
+<%= form_tag '/', :method => 'get' do %>
+  <p>
+    <%= text_field_tag :search_word, params[:search_word] %>
+    <%= submit_tag "Search", :name => nil %>
+  </p>
+<% end %>
+
 <%= form_for(@micropost) do |f| %>
   <%= render 'shared/error_messages', object: f.object %>
   <div class="field">
